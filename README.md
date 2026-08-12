@@ -1,7 +1,7 @@
-# Agent Toolbox
+# Agent Sandbox
 
 A container-scoped AI development host for running Codex CLI, Claude Code, and
-other terminal agents with less access to the host machine. Agent Toolbox
+other terminal agents with less access to the host machine. Agent Sandbox
 combines an explicit-mount security boundary with persistent sessions and
 SSH/Mosh access from a desktop or phone.
 
@@ -15,10 +15,10 @@ Neovim, Eza, FZF, and zoxide setup.
 <table>
   <tr>
     <td width="68%">
-      <img src="docs/images/desktop-claude-session.png" alt="Claude Code running in the Agent Toolbox tmux session from a laptop terminal">
+      <img src="docs/images/desktop-claude-session.png" alt="Claude Code running in the Agent Sandbox tmux session from a laptop terminal">
     </td>
     <td width="32%">
-      <img src="docs/images/phone-claude-session.png" alt="The same Claude Code Agent Toolbox session accessed from a phone through Moshi and Mosh">
+      <img src="docs/images/phone-claude-session.png" alt="The same Claude Code Agent Sandbox session accessed from a phone through Moshi and Mosh">
     </td>
   </tr>
   <tr>
@@ -30,7 +30,7 @@ Neovim, Eza, FZF, and zoxide setup.
 Both clients are viewing the same `1:claude` tmux window. Work continues inside
 the container when either client sleeps, changes networks, or disconnects.
 
-## Why Agent Toolbox
+## Why Agent Sandbox
 
 - **Narrow host exposure:** projects and configuration appear only through a
   reviewed list of read-write or read-only mounts. The Docker socket, host home
@@ -45,7 +45,7 @@ the container when either client sleeps, changes networks, or disconnects.
 ```mermaid
 flowchart LR
     desktop["Desktop terminal"] -->|"local shell or SSH"| sandbox
-    phone["Phone + Moshi"] -->|"SSH bootstrap + Mosh"| sandbox["Agent Toolbox container"]
+    phone["Phone + Moshi"] -->|"SSH bootstrap + Mosh"| sandbox["Agent Sandbox container"]
     projects["Approved projects"] <-->|"explicit mounts"| sandbox
     config["Optional shared config"] -->|"read-only"| sandbox
     sandbox --> state["Persistent agent sessions"]
@@ -57,8 +57,8 @@ The default configuration listens only on the local machine. Choose a project
 directory that agents are allowed to read and modify:
 
 ```bash
-git clone https://github.com/ukchucktown/agent-toolbox.git
-cd agent-toolbox
+git clone https://github.com/ukchucktown/agent-sandbox.git
+cd agent-sandbox
 cp .env.example .env
 ./sandbox mount add /absolute/path/to/projects /workspace
 ./sandbox build
@@ -75,7 +75,7 @@ can upgrade without creating new containers or volumes.
 
 ## Container toolchain
 
-Agent Toolbox is a ready-to-use development environment, not just an SSH
+Agent Sandbox is a ready-to-use development environment, not just an SSH
 server. The image includes:
 
 | Area | Included tools |
@@ -156,7 +156,7 @@ The container has the toolchain needed for Camunda 8 development:
 - An opt-in `host-local` profile lets c8ctl and application clients reach a
   Camunda 8 cluster running on the Docker host.
 
-The host retains cluster lifecycle control. Agent Toolbox does not include
+The host retains cluster lifecycle control. Agent Sandbox does not include
 `c8run`, mount the Docker socket, or allow the container to manage Docker.
 See [Connect to a host Camunda 8 cluster](#connect-to-a-host-camunda-8-cluster)
 for the setup and security boundary.
@@ -193,8 +193,8 @@ making the SSH endpoint reachable outside the host.
 
 The launcher reads environment configuration in this order:
 
-1. The file named by `AGENT_TOOLBOX_ENV_FILE`
-2. `~/.config/agent-toolbox/agent-sandbox.env`
+1. The file named by `AGENT_SANDBOX_ENV_FILE`
+2. `~/.config/agent-sandbox/agent-sandbox.env`
 3. The ignored `.env` file in this repository
 
 For a simple local setup:
@@ -206,7 +206,7 @@ cp .env.example .env
 For a Stow-managed setup, store the file in the dotfiles tree at:
 
 ```text
-.config/agent-toolbox/agent-sandbox.env
+.config/agent-sandbox/agent-sandbox.env
 ```
 
 The example binds SSH and Mosh to `127.0.0.1` for a safe local-only default. To
@@ -219,8 +219,8 @@ the same range in Moshi's connection settings.
 
 Mount configuration is discovered independently:
 
-1. The file named by `AGENT_TOOLBOX_MOUNTS_FILE`
-2. `~/.config/agent-toolbox/compose.mounts.yaml`
+1. The file named by `AGENT_SANDBOX_MOUNTS_FILE`
+2. `~/.config/agent-sandbox/compose.mounts.yaml`
 3. The ignored `compose.mounts.yaml` file in this repository
 
 The mount file is authoritative; the base Compose file contains no host bind
@@ -358,9 +358,12 @@ Authenticate GitHub CLI separately:
 ./sandbox gh-login
 ```
 
-This uses the browser flow and configures Git to use GitHub CLI credentials
-over HTTPS. The login persists in the `agent-home` volume. It does not copy the
-host's SSH keys or GitHub configuration into the container.
+This uses the browser flow to authenticate GitHub CLI for API operations and
+selects SSH for Git operations. If the container does not already have an SSH
+key, GitHub CLI offers to create and upload a dedicated key. Both the login and
+private key persist in the `agent-home` volume. The public key is added to the
+GitHub account during login; the host's SSH keys and GitHub configuration are
+not copied into the container.
 
 ## Connect to a host Camunda 8 cluster
 
@@ -529,4 +532,4 @@ identity.
 
 Improvements to portability, documentation, testing, and safe defaults are
 welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
-Agent Toolbox is available under the [MIT License](LICENSE).
+Agent Sandbox is available under the [MIT License](LICENSE).
