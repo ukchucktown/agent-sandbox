@@ -1,4 +1,4 @@
-# Agent Toolbox's Zsh entry point. A trusted read-only configuration mounted at
+# Agent Sandbox's Zsh entry point. A trusted read-only configuration mounted at
 # /opt/agent-shell/zshrc can replace the default interactive setup.
 
 export JAVA_HOME="/opt/java/openjdk"

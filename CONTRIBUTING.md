@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping make Agent Toolbox safer, more portable, and easier to use.
+Thanks for helping make Agent Sandbox safer, more portable, and easier to use.
 
 ## Design boundaries
 

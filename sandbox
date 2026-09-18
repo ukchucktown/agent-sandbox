@@ -4,8 +4,8 @@ set -euo pipefail
 
 project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 config_home="${XDG_CONFIG_HOME:-${HOME}/.config}"
-managed_env_file="${config_home}/agent-toolbox/agent-sandbox.env"
-managed_mounts_file="${config_home}/agent-toolbox/compose.mounts.yaml"
+managed_env_file="${config_home}/agent-sandbox/agent-sandbox.env"
+managed_mounts_file="${config_home}/agent-sandbox/compose.mounts.yaml"
 local_env_file="${project_dir}/.env"
 local_mounts_file="${project_dir}/compose.mounts.yaml"
 mount_tool="${project_dir}/scripts/manage-mounts.cjs"
@@ -37,14 +37,14 @@ Commands:
   host-key                         Print the sandbox SSH host-key fingerprint
   codex-login                      Authenticate Codex using device authorization
   claude-login                     Authenticate Claude Code
-  gh-login                         Authenticate GitHub CLI over HTTPS
+  gh-login                         Authenticate GitHub CLI and configure SSH
   moshi-pair                       Pair Moshi agent hooks
   moshi-install                    Refresh hooks for both agent CLIs
 EOF
 }
 
-if [[ -n "${AGENT_TOOLBOX_MOUNTS_FILE:-}" ]]; then
-  mounts_file="${AGENT_TOOLBOX_MOUNTS_FILE}"
+if [[ -n "${AGENT_SANDBOX_MOUNTS_FILE:-}" ]]; then
+  mounts_file="${AGENT_SANDBOX_MOUNTS_FILE}"
 elif [[ -f "${managed_mounts_file}" ]]; then
   mounts_file="${managed_mounts_file}"
 elif [[ -f "${local_mounts_file}" ]]; then
@@ -88,8 +88,8 @@ case "${command_name}" in
     ;;
 esac
 
-if [[ -n "${AGENT_TOOLBOX_ENV_FILE:-}" ]]; then
-  env_file="${AGENT_TOOLBOX_ENV_FILE}"
+if [[ -n "${AGENT_SANDBOX_ENV_FILE:-}" ]]; then
+  env_file="${AGENT_SANDBOX_ENV_FILE}"
 elif [[ -f "${managed_env_file}" ]]; then
   env_file="${managed_env_file}"
 else
@@ -97,7 +97,7 @@ else
 fi
 
 if [[ ! -f "${env_file}" ]]; then
-  if [[ -n "${AGENT_TOOLBOX_ENV_FILE:-}" ]]; then
+  if [[ -n "${AGENT_SANDBOX_ENV_FILE:-}" ]]; then
     echo "Configured environment file does not exist: ${env_file}" >&2
     exit 1
   fi
@@ -190,9 +190,8 @@ case "${command_name}" in
     exec "${compose[@]}" exec --user agent sandbox claude auth login
     ;;
   gh-login)
-    "${compose[@]}" exec --user agent sandbox \
-      gh auth login --web --git-protocol https
-    "${compose[@]}" exec --user agent sandbox gh auth setup-git
+    exec "${compose[@]}" exec --user agent sandbox \
+      gh auth login --web --git-protocol ssh
     ;;
   moshi-pair)
     read -r -s -p "Moshi Agent Hooks token: " moshi_token

@@ -81,7 +81,7 @@ server. The image includes:
 | Area | Included tools |
 | --- | --- |
 | Agent workflow | Codex CLI, Claude Code, Herdr, Mosh, and Moshi agent hooks |
-| JavaScript | Node.js 22, npm, Corepack, and pnpm support |
+| JavaScript | Node.js 24, npm, Corepack, and pnpm support |
 | Python | Python 3.14 and uv |
 | Java | Eclipse Temurin Java 25 and Maven 3.9 |
 | Camunda 8 | `c8`, `c8ctl`, and the BPMN, element-template, and FEEL commands |
@@ -523,6 +523,8 @@ version and then rebuild:
 
 When upgrading an older checkout, copy any newly introduced version variables
 from `.env.example` into your selected environment file before building.
+Replace `CODEX_VERSION` with `CODEX_CLI_VERSION` in an older environment file.
+The new name prevents the Codex session environment from overriding the CLI pin.
 
 Do not run `docker compose down --volumes` unless you intend to delete the
 persisted Codex login, Claude login, Herdr state, Moshi pairing, and SSH host

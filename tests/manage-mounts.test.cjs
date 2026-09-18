@@ -15,7 +15,7 @@ function run(...args) {
 
 function withWorkspace(callback) {
   const directory = fs.mkdtempSync(
-    path.join(os.tmpdir(), "agent-toolbox-mounts-"),
+    path.join(os.tmpdir(), "agent-sandbox-mounts-"),
   );
   try {
     const source = path.join(directory, "source");

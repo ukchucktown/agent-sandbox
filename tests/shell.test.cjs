@@ -41,6 +41,25 @@ test("loads an optional external shell package from a fixed path", () => {
   assert.match(tmux, /\/opt\/agent-shell\/tmux\.conf/);
 });
 
+test("uses Agent Sandbox names for managed configuration", () => {
+  assert.match(
+    launcher,
+    /config_home\}\/agent-sandbox\/agent-sandbox\.env/,
+  );
+  assert.match(
+    launcher,
+    /config_home\}\/agent-sandbox\/compose\.mounts\.yaml/,
+  );
+  assert.match(launcher, /AGENT_SANDBOX_ENV_FILE/);
+  assert.match(launcher, /AGENT_SANDBOX_MOUNTS_FILE/);
+});
+
+test("authenticates GitHub CLI and configures Git to use SSH", () => {
+  assert.match(launcher, /gh auth login --web --git-protocol ssh/);
+  assert.doesNotMatch(launcher, /gh auth setup-git/);
+  assert.doesNotMatch(launcher, /--git-protocol https/);
+});
+
 test("uses Starship without a shell framework", () => {
   assert.match(zshrc, /starship init zsh/);
   assert.doesNotMatch(compose, /DOTFILES_PROMPT/);
@@ -58,6 +77,8 @@ test("provides the host-style listing and navigation shell baseline", () => {
   assert.match(zshrc, /source \/etc\/agent-shell\/aliases\.zsh/);
   assert.match(zshrc, /zoxide init zsh/);
   assert.match(aliases, /alias ll='eza -lh --icons --git --no-user --no-time'/);
+  assert.match(aliases, /alias tree=.*--level=3/);
+  assert.match(aliases, /alias dtree=.*--level=3.* -D/);
   assert.doesNotMatch(
     zshrc,
     /source \/opt\/agent-shell\/zshrc\s+return/,

@@ -34,7 +34,7 @@ RUN cargo install \
       --version "${ZOXIDE_VERSION}" \
       zoxide
 
-FROM node:22-bookworm-slim AS tmux-toolchain
+FROM node:24-bookworm-slim AS tmux-toolchain
 
 ARG TMUX_VERSION
 ARG TMUX_SHA256
@@ -61,7 +61,7 @@ RUN apt-get update \
     && make -j"$(nproc)" \
     && make install DESTDIR=/opt/tmux
 
-FROM node:22-bookworm-slim
+FROM node:24-bookworm-slim
 
 ARG TARGETARCH
 ARG AGENT_UID=501
@@ -83,7 +83,7 @@ ARG ZSH_AUTOSUGGESTIONS_VERSION
 ARG ZSH_HISTORY_SUBSTRING_SEARCH_VERSION
 ARG ZSH_SYNTAX_HIGHLIGHTING_VERSION
 ARG FZF_TAB_VERSION
-ARG CODEX_VERSION
+ARG CODEX_CLI_VERSION
 ARG CLAUDE_CODE_VERSION
 ARG HERDR_VERSION
 ARG MOSHI_HOOK_VERSION
@@ -245,7 +245,7 @@ RUN npm install \
       --no-audit \
       --no-fund \
       "@camunda8/cli@${C8CTL_VERSION}" \
-      "@openai/codex@${CODEX_VERSION}" \
+      "@openai/codex@${CODEX_CLI_VERSION}" \
       "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
 
 USER root

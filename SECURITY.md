@@ -2,7 +2,7 @@
 
 ## Operational model
 
-Agent Toolbox exposes a key-only OpenSSH server from an unprivileged container.
+Agent Sandbox exposes a key-only OpenSSH server from an unprivileged container.
 Configured workspaces may be mounted read-write, the container has unrestricted
 outbound networking, and the `agent` user has passwordless `sudo` inside the
 container.
