@@ -8,7 +8,7 @@ export LC_ALL="${LC_ALL:-C.UTF-8}"
 
 if [[ $- == *i* ]]; then
   printf '%s\n' \
-    "Agent Toolbox" \
+    "Agent Sandbox" \
     "  Projects: /workspace" \
     "  Start:    cd /workspace/<project> && herdr" \
     "  Agents:   codex | claude" \

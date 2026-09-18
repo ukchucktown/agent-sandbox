@@ -31,6 +31,7 @@ test("builds the development toolchain into the sandbox image", () => {
     "STARSHIP_SHA256_ARM64",
     "TREE_SITTER_CLI_VERSION",
     "C8CTL_VERSION",
+    "CODEX_CLI_VERSION",
     "EZA_VERSION",
     "ZOXIDE_VERSION",
     "@camunda8/cli@${C8CTL_VERSION}",
@@ -55,6 +56,12 @@ test("publishes a configurable Mosh UDP range", () => {
   assert.match(dockerfile, /EXPOSE 22\/tcp 60000-60010\/udp/);
   assert.match(compose, /MOSH_UDP_PORT_RANGE:-60000-60010/);
   assert.match(compose, /\/udp/);
+});
+
+test("uses a Codex CLI pin that cannot collide with the Codex session version", () => {
+  assert.match(dockerfile, /@openai\/codex@\$\{CODEX_CLI_VERSION\}/);
+  assert.match(compose, /CODEX_CLI_VERSION: \$\{CODEX_CLI_VERSION\}/);
+  assert.doesNotMatch(compose, /\bCODEX_VERSION\b/);
 });
 
 test("does not grant the sandbox Docker daemon access", () => {
