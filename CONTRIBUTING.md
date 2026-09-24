@@ -33,6 +33,17 @@ If the Dockerfile or runtime behavior changed, also build a fresh image and run
 `./sandbox status`. Exercise mount changes with temporary directories that do
 not contain personal files.
 
+After a fresh image build, verify the Pi and Moshi integration:
+
+```bash
+AGENT_SANDBOX_TEST_IMAGE=agent-sandbox:local node --test tests/pi-container.test.cjs
+```
+
+This test uses a disposable container with no network access or host mounts.
+It checks the Pi version, Copilot provider registration, Moshi extension
+handlers, and preservation of existing settings and extensions. Without
+`AGENT_SANDBOX_TEST_IMAGE`, the host-side suite skips this container test.
+
 ## Pull requests
 
 Keep pull requests focused and describe:

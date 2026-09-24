@@ -38,7 +38,7 @@ gosu agent env HOME="${agent_home}" PATH="${PATH}" codex login status >/dev/null
 gosu agent env HOME="${agent_home}" PATH="${PATH}" claude auth status >/dev/null 2>&1 || true
 
 if ! gosu agent env HOME="${agent_home}" PATH="${PATH}" \
-  moshi-hook install --target codex --target claude; then
+  moshi-hook install --target codex --target claude --target pi; then
   echo "warning: Moshi agent hooks were not installed; run ./sandbox moshi-install" >&2
 fi
 

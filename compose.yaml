@@ -31,7 +31,7 @@ services:
         FZF_TAB_VERSION: ${FZF_TAB_VERSION}
         CODEX_CLI_VERSION: ${CODEX_CLI_VERSION}
         CLAUDE_CODE_VERSION: ${CLAUDE_CODE_VERSION}
-        COPILOT_CLI_VERSION: ${COPILOT_CLI_VERSION:?Set COPILOT_CLI_VERSION in your environment file (see .env.example)}
+        PI_CLI_VERSION: ${PI_CLI_VERSION:?Set PI_CLI_VERSION in your environment file (see .env.example)}
         HERDR_VERSION: ${HERDR_VERSION}
         MOSHI_HOOK_VERSION: ${MOSHI_HOOK_VERSION}
     image: agent-sandbox:local

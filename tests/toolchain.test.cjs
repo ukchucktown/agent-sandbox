@@ -64,26 +64,29 @@ test("uses a Codex CLI pin that cannot collide with the Codex session version", 
   assert.doesNotMatch(compose, /\bCODEX_VERSION\b/);
 });
 
-test("installs a pinned Copilot CLI as the agent user", () => {
+test("replaces Copilot CLI with a pinned Pi harness as the agent user", () => {
   const environment = fs.readFileSync(
     path.join(repository, ".env.example"),
     "utf8",
   );
 
-  assert.match(environment, /^COPILOT_CLI_VERSION=\d+\.\d+\.\d+$/m);
-  assert.match(dockerfile, /^ARG COPILOT_CLI_VERSION$/m);
+  assert.match(environment, /^PI_CLI_VERSION=\d+\.\d+\.\d+$/m);
+  assert.match(dockerfile, /^ARG PI_CLI_VERSION$/m);
   assert.match(
     dockerfile,
-    /USER agent\s+RUN npm install(?:(?!USER root)[\s\S])*"@github\/copilot@\$\{COPILOT_CLI_VERSION:\?COPILOT_CLI_VERSION is required\}"/,
+    /USER agent\s+RUN npm install(?:(?!USER root)[\s\S])*"@earendil-works\/pi-coding-agent@\$\{PI_CLI_VERSION:\?PI_CLI_VERSION is required\}"/,
   );
   assert.match(
     dockerfile,
-    /ln -s \/opt\/agent-tools\/node_modules\/\.bin\/copilot \/usr\/local\/bin\/copilot/,
+    /ln -s \/opt\/agent-tools\/node_modules\/\.bin\/pi \/usr\/local\/bin\/pi/,
   );
   assert.match(
     compose,
-    /COPILOT_CLI_VERSION: \$\{COPILOT_CLI_VERSION:\?Set COPILOT_CLI_VERSION in your environment file \(see \.env\.example\)\}/,
+    /PI_CLI_VERSION: \$\{PI_CLI_VERSION:\?Set PI_CLI_VERSION in your environment file \(see \.env\.example\)\}/,
   );
+  assert.doesNotMatch(dockerfile, /@github\/copilot|COPILOT_CLI_VERSION/);
+  assert.doesNotMatch(compose, /COPILOT_CLI_VERSION/);
+  assert.doesNotMatch(environment, /COPILOT_CLI_VERSION/);
 });
 
 test("does not grant the sandbox Docker daemon access", () => {

@@ -1,9 +1,9 @@
 # Agent Sandbox
 
 Agent Sandbox is a container-scoped AI development host for Codex CLI, Claude
-Code, GitHub Copilot CLI, and other terminal agents with limited host access. It
-combines an explicit-mount security boundary with persistent sessions and
-SSH/Mosh access from a desktop or phone.
+Code, Pi, and other terminal agents with limited host access. It combines an
+explicit-mount security boundary with persistent sessions and SSH/Mosh access
+from a desktop or phone.
 
 It is the sandbox half of the
 [terminal-first AI development environment](https://github.com/ukchucktown/dotfiles),
@@ -80,7 +80,7 @@ server. The image includes:
 
 | Area | Included tools |
 | --- | --- |
-| Agent workflow | Codex CLI, Claude Code, GitHub Copilot CLI (`copilot`), Herdr, Mosh, and Moshi agent hooks |
+| Agent workflow | Codex CLI, Claude Code, Pi (`pi`), Herdr, Mosh, and Moshi agent hooks |
 | JavaScript | Node.js 24, npm, Corepack, and pnpm support |
 | Python | Python 3.14 and uv |
 | Java | Eclipse Temurin Java 25 and Maven 3.9 |
@@ -93,6 +93,9 @@ server. The image includes:
 Runtime version lines and independently downloaded tool releases are pinned in
 the selected environment file so upgrades remain deliberate. Run
 `./sandbox versions` to inspect the installed versions.
+
+Pi provides GitHub Copilot access with Moshi agent hooks. The image does not
+include the standalone GitHub Copilot CLI.
 
 ### Match your local shell
 
@@ -144,6 +147,9 @@ validator requires all three to be read-only. Codex and Claude can discover the
 same global skills as the host, but skill installers and agent sessions cannot
 add, update, or remove them. Authentication, settings, plugins, history, and
 other client state remain independent in the `agent-home` volume.
+
+Pi also discovers the shared collection at `/home/agent/.agents/skills`.
+It does not need another bind mount.
 
 ## Camunda 8 development support
 
@@ -346,35 +352,43 @@ Follow the browser login flow. If a browser cannot open in the container, open
 the displayed URL on a trusted device and paste the returned code into the
 terminal.
 
-For GitHub Copilot CLI:
+### Pi with GitHub Copilot
 
-```bash
-./sandbox copilot-login
-```
+Pi uses its interactive login and model selectors. The image does not preset a
+provider or model, and it preserves existing Pi settings.
 
-This command uses device authorization, so the container does not need a
-browser.
+1. Open Pi with `./sandbox pi`.
+2. In Pi, enter `/login`.
+3. Select **Sign in with an account**.
+4. Select **GitHub Copilot**.
+5. Follow Pi's device authorization prompts.
+6. Open the displayed URL in your host browser.
+7. Enter the displayed code.
+8. In Pi, enter `/model`.
+9. Select a model from the `github-copilot` provider.
 
-1. Open the displayed URL on a trusted device.
-2. Enter the one-time code.
+The available models depend on your Copilot account and organization policies.
+Pi stores its settings, credentials, and sessions under `/home/agent/.pi/agent`
+in the persistent `agent-home` volume. Pi does not reuse the standalone Copilot
+CLI login or import the host's credentials and instructions.
 
-Copilot stores its configuration and login state under `/home/agent/.copilot`
-in the persistent `agent-home` volume. The container does not import the host's
-Copilot credentials, instructions, or Stow symlinks.
-
-To start Copilot in a container shell:
+To start Pi in a mounted project:
 
 ```bash
 ./sandbox shell
 cd /workspace/<project>
-copilot
+pi
 ```
+
+### Check installed tools
 
 Check all installed tools:
 
 ```bash
 ./sandbox versions
 ```
+
+### GitHub CLI
 
 Authenticate GitHub CLI separately:
 
@@ -459,8 +473,19 @@ In Moshi, open **Settings → Agent Hooks** and copy the pairing token. Then run
 ```
 
 The command prompts without echoing the token, stores the credential inside the
-persistent home volume, installs hooks for Codex and Claude Code, and restarts
-the container daemon.
+persistent home volume, installs hooks for Codex, Claude Code, and Pi, and
+restarts the container daemon.
+
+For Pi, Moshi installs `/home/agent/.pi/agent/extensions/moshi-hooks.ts`.
+Pi loads this extension automatically. Container startup and
+`./sandbox moshi-install` also install the extension. After a hook refresh,
+restart an existing Pi session to load the updated extension.
+
+The Pi integration sends prompt-start, turn-completion, and session-end events.
+Moshi also documents approval events when an agent requests approval. The
+extension does not add a permission policy or guarantee an approval prompt
+for every tool call. See [Moshi's hook documentation](https://getmoshi.app/docs/hooks)
+for the supported events and notification data.
 
 Diagnostics:
 
@@ -478,7 +503,7 @@ cd /workspace/<project>
 herdr
 ```
 
-Start `codex`, `claude`, or `copilot` in Herdr tabs. The primary project mount is
+Start `codex`, `claude`, or `pi` in Herdr tabs. The primary project mount is
 normally available below `/workspace`. Additional directories appear at their
 configured container targets.
 
@@ -529,7 +554,7 @@ not needed.
 ./sandbox config         Show the merged Compose configuration
 ./sandbox mount list     Show configured bind mounts
 ./sandbox logs           Follow logs
-./sandbox copilot-login  Authenticate GitHub Copilot CLI
+./sandbox pi             Open Pi; use /login and /model for GitHub Copilot
 ./sandbox gh-login       Authenticate GitHub CLI
 ./sandbox camunda status Check the opt-in host cluster connection
 ./sandbox moshi-install  Refresh hooks after an agent upgrade
@@ -551,14 +576,25 @@ from `.env.example` into your selected environment file before building.
 Replace `CODEX_VERSION` with `CODEX_CLI_VERSION` in an older environment file.
 The new name prevents the Codex session environment from overriding the CLI pin.
 
-For Copilot CLI, copy `COPILOT_CLI_VERSION` from `.env.example` into the
-selected environment file. This includes Stow-managed environment files.
-Compose rejects a missing or empty value. This prevents an accidental unpinned
-installation. The image includes Copilot after a rebuild, and `./sandbox up`
-recreates the container with the updated image.
+### Replace standalone Copilot CLI with Pi
+
+1. Copy `PI_CLI_VERSION` from `.env.example` into your selected environment
+   file. For a Stow-managed installation, this is normally
+   `~/.config/agent-sandbox/agent-sandbox.env`, not the repository's `.env`.
+2. Remove the obsolete `COPILOT_CLI_VERSION` setting.
+3. Rebuild the image with `./sandbox build`.
+4. Recreate the container with `./sandbox up`.
+5. Open Pi with `./sandbox pi`.
+6. Complete the interactive setup in [Pi with GitHub Copilot](#pi-with-github-copilot).
+
+Compose rejects a missing or empty Pi version to prevent an unpinned
+installation. The `copilot` executable and `./sandbox copilot-login` command
+are no longer available. Existing `/home/agent/.copilot` data remains in the
+home volume, but Pi does not read it. Existing Moshi pairing state remains
+available to the Pi extension.
 
 Do not run `docker compose down --volumes` unless you intend to delete the
-persisted Codex login, Claude login, Copilot login, Herdr state, Moshi pairing,
+persisted Codex login, Claude login, Pi login, Herdr state, Moshi pairing,
 and SSH host identity.
 
 ## Contributing and license
