@@ -11,6 +11,6 @@ if [[ $- == *i* ]]; then
     "Agent Sandbox" \
     "  Projects: /workspace" \
     "  Start:    cd /workspace/<project> && herdr" \
-    "  Agents:   codex | claude" \
+    "  Agents:   codex | claude | copilot" \
     "  Camunda:  ./sandbox camunda enable-host (run on the host)"
 fi

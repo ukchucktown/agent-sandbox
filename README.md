@@ -1,7 +1,7 @@
 # Agent Sandbox
 
-A container-scoped AI development host for running Codex CLI, Claude Code, and
-other terminal agents with less access to the host machine. Agent Sandbox
+Agent Sandbox is a container-scoped AI development host for Codex CLI, Claude
+Code, GitHub Copilot CLI, and other terminal agents with limited host access. It
 combines an explicit-mount security boundary with persistent sessions and
 SSH/Mosh access from a desktop or phone.
 
@@ -80,7 +80,7 @@ server. The image includes:
 
 | Area | Included tools |
 | --- | --- |
-| Agent workflow | Codex CLI, Claude Code, Herdr, Mosh, and Moshi agent hooks |
+| Agent workflow | Codex CLI, Claude Code, GitHub Copilot CLI (`copilot`), Herdr, Mosh, and Moshi agent hooks |
 | JavaScript | Node.js 24, npm, Corepack, and pnpm support |
 | Python | Python 3.14 and uv |
 | Java | Eclipse Temurin Java 25 and Maven 3.9 |
@@ -346,6 +346,30 @@ Follow the browser login flow. If a browser cannot open in the container, open
 the displayed URL on a trusted device and paste the returned code into the
 terminal.
 
+For GitHub Copilot CLI:
+
+```bash
+./sandbox copilot-login
+```
+
+This command uses device authorization, so the container does not need a
+browser.
+
+1. Open the displayed URL on a trusted device.
+2. Enter the one-time code.
+
+Copilot stores its configuration and login state under `/home/agent/.copilot`
+in the persistent `agent-home` volume. The container does not import the host's
+Copilot credentials, instructions, or Stow symlinks.
+
+To start Copilot in a container shell:
+
+```bash
+./sandbox shell
+cd /workspace/<project>
+copilot
+```
+
 Check all installed tools:
 
 ```bash
@@ -454,9 +478,9 @@ cd /workspace/<project>
 herdr
 ```
 
-Start `codex` or `claude` in Herdr tabs. The primary project mount is normally
-available below `/workspace`; additional directories appear at their configured
-container targets.
+Start `codex`, `claude`, or `copilot` in Herdr tabs. The primary project mount is
+normally available below `/workspace`. Additional directories appear at their
+configured container targets.
 
 For a conventional shared terminal instead, use tmux:
 
@@ -505,6 +529,7 @@ not needed.
 ./sandbox config         Show the merged Compose configuration
 ./sandbox mount list     Show configured bind mounts
 ./sandbox logs           Follow logs
+./sandbox copilot-login  Authenticate GitHub Copilot CLI
 ./sandbox gh-login       Authenticate GitHub CLI
 ./sandbox camunda status Check the opt-in host cluster connection
 ./sandbox moshi-install  Refresh hooks after an agent upgrade
@@ -526,9 +551,15 @@ from `.env.example` into your selected environment file before building.
 Replace `CODEX_VERSION` with `CODEX_CLI_VERSION` in an older environment file.
 The new name prevents the Codex session environment from overriding the CLI pin.
 
+For Copilot CLI, copy `COPILOT_CLI_VERSION` from `.env.example` into the
+selected environment file. This includes Stow-managed environment files.
+Compose rejects a missing or empty value. This prevents an accidental unpinned
+installation. The image includes Copilot after a rebuild, and `./sandbox up`
+recreates the container with the updated image.
+
 Do not run `docker compose down --volumes` unless you intend to delete the
-persisted Codex login, Claude login, Herdr state, Moshi pairing, and SSH host
-identity.
+persisted Codex login, Claude login, Copilot login, Herdr state, Moshi pairing,
+and SSH host identity.
 
 ## Contributing and license
 

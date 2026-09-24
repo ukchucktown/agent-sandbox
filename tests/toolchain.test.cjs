@@ -64,6 +64,28 @@ test("uses a Codex CLI pin that cannot collide with the Codex session version", 
   assert.doesNotMatch(compose, /\bCODEX_VERSION\b/);
 });
 
+test("installs a pinned Copilot CLI as the agent user", () => {
+  const environment = fs.readFileSync(
+    path.join(repository, ".env.example"),
+    "utf8",
+  );
+
+  assert.match(environment, /^COPILOT_CLI_VERSION=\d+\.\d+\.\d+$/m);
+  assert.match(dockerfile, /^ARG COPILOT_CLI_VERSION$/m);
+  assert.match(
+    dockerfile,
+    /USER agent\s+RUN npm install(?:(?!USER root)[\s\S])*"@github\/copilot@\$\{COPILOT_CLI_VERSION:\?COPILOT_CLI_VERSION is required\}"/,
+  );
+  assert.match(
+    dockerfile,
+    /ln -s \/opt\/agent-tools\/node_modules\/\.bin\/copilot \/usr\/local\/bin\/copilot/,
+  );
+  assert.match(
+    compose,
+    /COPILOT_CLI_VERSION: \$\{COPILOT_CLI_VERSION:\?Set COPILOT_CLI_VERSION in your environment file \(see \.env\.example\)\}/,
+  );
+});
+
 test("does not grant the sandbox Docker daemon access", () => {
   assert.doesNotMatch(dockerfile, /docker\.sock|docker-cli|docker-ce-cli/);
   assert.doesNotMatch(compose, /docker\.sock/);
