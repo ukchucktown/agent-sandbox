@@ -85,6 +85,7 @@ ARG ZSH_SYNTAX_HIGHLIGHTING_VERSION
 ARG FZF_TAB_VERSION
 ARG CODEX_CLI_VERSION
 ARG CLAUDE_CODE_VERSION
+ARG COPILOT_CLI_VERSION
 ARG HERDR_VERSION
 ARG MOSHI_HOOK_VERSION
 
@@ -246,14 +247,16 @@ RUN npm install \
       --no-fund \
       "@camunda8/cli@${C8CTL_VERSION}" \
       "@openai/codex@${CODEX_CLI_VERSION}" \
-      "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+      "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
+      "@github/copilot@${COPILOT_CLI_VERSION:?COPILOT_CLI_VERSION is required}"
 
 USER root
 
 RUN ln -s /opt/agent-tools/node_modules/.bin/c8 /usr/local/bin/c8 \
     && ln -s /opt/agent-tools/node_modules/.bin/c8ctl /usr/local/bin/c8ctl \
     && ln -s /opt/agent-tools/node_modules/.bin/codex /usr/local/bin/codex \
-    && ln -s /opt/agent-tools/node_modules/.bin/claude /usr/local/bin/claude
+    && ln -s /opt/agent-tools/node_modules/.bin/claude /usr/local/bin/claude \
+    && ln -s /opt/agent-tools/node_modules/.bin/copilot /usr/local/bin/copilot
 
 RUN case "${TARGETARCH}" in \
       amd64) herdr_arch="x86_64" ;; \

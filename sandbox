@@ -37,6 +37,7 @@ Commands:
   host-key                         Print the sandbox SSH host-key fingerprint
   codex-login                      Authenticate Codex using device authorization
   claude-login                     Authenticate Claude Code
+  copilot-login                    Authenticate GitHub Copilot CLI using a device code
   gh-login                         Authenticate GitHub CLI and configure SSH
   moshi-pair                       Pair Moshi agent hooks
   moshi-install                    Refresh hooks for both agent CLIs
@@ -165,7 +166,7 @@ case "${command_name}" in
     ;;
   versions)
     exec "${compose[@]}" exec --user agent sandbox bash -lc \
-      'node --version; python --version; uv --version; java --version; mvn --version; gh --version | head -1; nvim --version | head -1; starship --version; tree-sitter --version; mosh-server --version | head -1; c8ctl --version; codex --version; claude --version; herdr --version; moshi-hook version'
+      'node --version; python --version; uv --version; java --version; mvn --version; gh --version | head -1; nvim --version | head -1; starship --version; tree-sitter --version; mosh-server --version | head -1; c8ctl --version; codex --version; claude --version; copilot --version; herdr --version; moshi-hook version'
     ;;
   authorize-key)
     if (($# > 0)); then
@@ -188,6 +189,9 @@ case "${command_name}" in
     ;;
   claude-login)
     exec "${compose[@]}" exec --user agent sandbox claude auth login
+    ;;
+  copilot-login)
+    exec "${compose[@]}" exec --user agent sandbox copilot login --device-code
     ;;
   gh-login)
     exec "${compose[@]}" exec --user agent sandbox \
@@ -213,7 +217,7 @@ case "${command_name}" in
     if "${compose[@]}" ps --status running --quiet sandbox | grep -q .; then
       printf '\nTool versions:\n'
       "${compose[@]}" exec --user agent sandbox bash -lc \
-        'node --version; python --version; java --version; mvn --version | head -1; gh --version | head -1; nvim --version | head -1; starship --version; tree-sitter --version; mosh-server --version | head -1; c8ctl --version; codex --version; claude --version; herdr --version; moshi-hook version'
+        'node --version; python --version; java --version; mvn --version | head -1; gh --version | head -1; nvim --version | head -1; starship --version; tree-sitter --version; mosh-server --version | head -1; c8ctl --version; codex --version; claude --version; copilot --version; herdr --version; moshi-hook version'
       printf '\nSSH configuration:\n'
       "${compose[@]}" exec sandbox /usr/sbin/sshd -t
       echo "valid"
