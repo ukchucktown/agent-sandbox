@@ -60,32 +60,45 @@ test("authenticates GitHub CLI and configures Git to use SSH", () => {
   assert.doesNotMatch(launcher, /--git-protocol https/);
 });
 
-test("authenticates Copilot with a device code as the agent user", () => {
-  assert.match(launcher, /copilot-login\s+Authenticate GitHub Copilot CLI/);
+test("opens Pi as the agent user and forwards its arguments", () => {
+  assert.match(launcher, /pi\s+Open Pi \(use \/login/);
   assert.match(
     launcher,
-    /copilot-login\)\s+exec "\$\{compose\[@\]\}" exec --user agent sandbox copilot login --device-code\s+;;/,
+    /pi\)\s+exec "\$\{compose\[@\]\}" exec --user agent sandbox pi "\$@"\s+;;/,
   );
+  assert.doesNotMatch(launcher, /copilot-login|copilot --version/);
 });
 
-test("includes Copilot in both tool version reports", () => {
+test("includes Pi in both tool version reports", () => {
   for (const command of ["versions", "status"]) {
     const commandBody = launcher.match(
       new RegExp(`^  ${command}\\)([\\s\\S]*?)^    ;;`, "m"),
     );
     assert.ok(commandBody, `${command} command is present`);
     assert.match(commandBody[1], /exec --user agent sandbox bash -lc/);
-    assert.match(commandBody[1], /copilot --version/);
+    assert.match(commandBody[1], /pi --version/);
   }
 });
 
-test("advertises Copilot in the interactive shell banner", () => {
+test("advertises Pi in the interactive shell banner", () => {
   const profile = fs.readFileSync(
     path.join(repository, "scripts", "profile.sh"),
     "utf8",
   );
 
-  assert.match(profile, /Agents:\s+codex \| claude \| copilot/);
+  assert.match(profile, /Agents:\s+codex \| claude \| pi/);
+});
+
+test("installs Pi hooks during startup, pairing, and hook refresh", () => {
+  const install = /moshi-hook install --target codex --target claude --target pi/;
+  assert.match(entrypoint, install);
+  for (const command of ["moshi-pair", "moshi-install"]) {
+    const commandBody = launcher.match(
+      new RegExp(`^  ${command}\\)([\\s\\S]*?)^    ;;`, "m"),
+    );
+    assert.ok(commandBody, `${command} command is present`);
+    assert.match(commandBody[1], install);
+  }
 });
 
 test("uses Starship without a shell framework", () => {
