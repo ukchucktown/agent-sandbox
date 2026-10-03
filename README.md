@@ -352,6 +352,34 @@ Follow the browser login flow. If a browser cannot open in the container, open
 the displayed URL on a trusted device and paste the returned code into the
 terminal.
 
+### Claude Code updates
+
+Claude Code uses a native installation under `/home/agent/.local` in the
+persistent `agent-home` volume. Automatic updates follow the `latest` channel
+by default. Updates take effect the next time you start Claude Code.
+
+The image bundles the version from `CLAUDE_CODE_VERSION` as a seed for new
+homes. Startup preserves an existing native installation, so a container
+restart, recreation, or image rebuild does not replace an updated version.
+The seed supports first startup without a download.
+
+To check the installation inside the sandbox:
+
+```bash
+claude doctor
+```
+
+The diagnostics show `Running: native`, `Auto-updates: enabled`, and
+`Auto-update channel: latest` with the default settings.
+
+To apply an available update immediately:
+
+```bash
+claude update
+```
+
+To change the release channel, use `/config` in Claude Code.
+
 ### Pi with GitHub Copilot
 
 Pi uses its interactive login and model selectors. The image does not preset a

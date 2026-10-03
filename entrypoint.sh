@@ -32,6 +32,8 @@ fi
 chmod 0600 "${host_key_dir}/ssh_host_ed25519_key"
 chmod 0644 "${host_key_dir}/ssh_host_ed25519_key.pub"
 
+gosu agent env HOME="${agent_home}" initialize-claude
+
 # Initialize each agent's configuration directory before Moshi looks for it.
 # Both status commands are expected to return non-zero until authentication.
 gosu agent env HOME="${agent_home}" PATH="${PATH}" codex login status >/dev/null 2>&1 || true
