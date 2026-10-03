@@ -408,6 +408,38 @@ cd /workspace/<project>
 pi
 ```
 
+### Pi extensions
+
+The following extensions add web research, focused subagents, and a plan mode.
+Their packages and settings stay in the persistent `agent-home` volume.
+
+From a sandbox shell, install the selected versions:
+
+```bash
+pi install npm:pi-web-access@0.35.0 --no-approve
+pi install npm:pi-subagents@0.75.0 --no-approve
+pi install /opt/agent-tools/node_modules/@earendil-works/pi-coding-agent/examples/extensions/plan-mode/index.ts --no-approve
+```
+
+These commands preserve the selected model, theme, authentication, and Moshi
+hooks. The plan-mode source comes from the installed Pi version. No image
+rebuild is required for this setup.
+
+In an existing Pi session, enter `/reload` to load the extensions.
+
+- **Web research:** Ask Pi to search the web or read a URL. The default Exa
+  search route needs no API key.
+- **Subagents:** Ask Pi to use a scout, worker, or reviewer. The bundled agents
+  inherit the parent session's model unless you select an override.
+- **Plan mode:** Enter `/plan` to toggle exploration mode. The extension
+  disables built-in edit and write tools and restricts Bash commands. Other
+  extension tools remain available. Enter `/todos` to inspect plan progress.
+
+To inspect the installed packages, use `pi list`. The upstream documentation
+covers additional search providers and subagent settings:
+[pi-web-access](https://github.com/nicobailon/pi-web-access) and
+[pi-subagents](https://github.com/nicobailon/pi-subagents).
+
 ### Check installed tools
 
 Check all installed tools:
