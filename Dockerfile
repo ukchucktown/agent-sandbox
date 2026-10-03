@@ -94,7 +94,7 @@ ENV JAVA_HOME=/opt/java/openjdk
 ENV MAVEN_HOME=/usr/share/maven
 ENV UV_PYTHON_INSTALL_DIR=/opt/python
 ENV ZDOTDIR=/etc/agent-shell
-ENV PATH="${JAVA_HOME}/bin:${MAVEN_HOME}/bin:/opt/agent-tools/node_modules/.bin:/usr/local/bin:${PATH}"
+ENV PATH="/home/agent/.local/bin:${JAVA_HOME}/bin:${MAVEN_HOME}/bin:/opt/agent-tools/node_modules/.bin:/usr/local/bin:${PATH}"
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 ENV TERM=xterm-256color
@@ -237,7 +237,7 @@ RUN groupadd --gid "${AGENT_GID}" agent \
     && usermod --password NP agent \
     && printf '%s\n' 'agent ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/agent \
     && chmod 0440 /etc/sudoers.d/agent \
-    && install -d -o agent -g agent /opt/agent-tools
+    && install -d -o agent -g agent /opt/agent-tools /opt/claude-seed
 
 USER agent
 
@@ -247,15 +247,23 @@ RUN npm install \
       --no-fund \
       "@camunda8/cli@${C8CTL_VERSION}" \
       "@openai/codex@${CODEX_CLI_VERSION}" \
-      "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
       "@earendil-works/pi-coding-agent@${PI_CLI_VERSION:?PI_CLI_VERSION is required}"
+
+# Seed new persistent homes with a pinned native binary. Runtime updates remain
+# in the agent home rather than the image's npm installation.
+RUN curl --fail --silent --show-error --location \
+      https://claude.ai/install.sh \
+      --output /tmp/install-claude.sh \
+    && env HOME=/tmp/claude-build-home bash /tmp/install-claude.sh "${CLAUDE_CODE_VERSION}" \
+    && install -m 0755 /tmp/claude-build-home/.local/bin/claude /opt/claude-seed/claude \
+    && printf '%s\n' "${CLAUDE_CODE_VERSION}" > /opt/claude-seed/version \
+    && rm -rf /tmp/claude-build-home /tmp/install-claude.sh
 
 USER root
 
 RUN ln -s /opt/agent-tools/node_modules/.bin/c8 /usr/local/bin/c8 \
     && ln -s /opt/agent-tools/node_modules/.bin/c8ctl /usr/local/bin/c8ctl \
     && ln -s /opt/agent-tools/node_modules/.bin/codex /usr/local/bin/codex \
-    && ln -s /opt/agent-tools/node_modules/.bin/claude /usr/local/bin/claude \
     && ln -s /opt/agent-tools/node_modules/.bin/pi /usr/local/bin/pi
 
 RUN case "${TARGETARCH}" in \
@@ -281,6 +289,8 @@ COPY entrypoint.sh /usr/local/bin/agent-sandbox-entrypoint
 COPY scripts/add-authorized-key.cjs /usr/local/bin/add-authorized-key
 COPY scripts/camunda-host.cjs /usr/local/bin/camunda-host
 COPY scripts/profile.sh /etc/profile.d/agent-sandbox.sh
+COPY scripts/initialize-claude.sh /usr/local/bin/initialize-claude
+COPY scripts/claude.sh /usr/local/bin/claude
 COPY shell/zshrc /etc/agent-shell/.zshrc
 COPY shell/aliases.zsh /etc/agent-shell/aliases.zsh
 COPY shell/fzf.zsh /etc/agent-shell/fzf.zsh
@@ -290,6 +300,8 @@ RUN chmod 0755 \
       /usr/local/bin/agent-sandbox-entrypoint \
       /usr/local/bin/add-authorized-key \
       /usr/local/bin/camunda-host \
+      /usr/local/bin/initialize-claude \
+      /usr/local/bin/claude \
       /etc/profile.d/agent-sandbox.sh \
     && chmod 0644 \
       /etc/agent-shell/.zshrc \
