@@ -68,6 +68,9 @@ ARG AGENT_UID=501
 ARG AGENT_GID=501
 ARG PYTHON_VERSION
 ARG GH_VERSION
+ARG FD_VERSION
+ARG FD_SHA256_AMD64
+ARG FD_SHA256_ARM64
 ARG NEOVIM_VERSION
 ARG NEOVIM_SHA256_AMD64
 ARG NEOVIM_SHA256_ARM64
@@ -114,7 +117,6 @@ RUN apt-get update \
         build-essential \
         ca-certificates \
         curl \
-        fd-find \
         fzf \
         git \
         git-lfs \
@@ -140,7 +142,6 @@ RUN apt-get update \
         zsh \
     && rm -rf /var/lib/apt/lists/* \
     && ln -sf /usr/bin/batcat /usr/local/bin/bat \
-    && ln -sf /usr/bin/fdfind /usr/local/bin/fd \
     && ln -sf "${MAVEN_HOME}/bin/mvn" /usr/local/bin/mvn \
     && corepack enable pnpm
 
@@ -174,6 +175,21 @@ RUN install_component() { \
 RUN UV_PYTHON_INSTALL_DIR="${UV_PYTHON_INSTALL_DIR}" \
       XDG_BIN_HOME=/usr/local/bin \
       uv python install --default "${PYTHON_VERSION}"
+
+RUN case "${TARGETARCH}" in \
+      amd64) fd_arch="x86_64"; fd_sha256="${FD_SHA256_AMD64}" ;; \
+      arm64) fd_arch="aarch64"; fd_sha256="${FD_SHA256_ARM64}" ;; \
+      *) echo "unsupported Docker architecture: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac \
+    && fd_archive="fd-v${FD_VERSION}-${fd_arch}-unknown-linux-musl" \
+    && curl --fail --silent --show-error --location \
+      "https://github.com/sharkdp/fd/releases/download/v${FD_VERSION}/${fd_archive}.tar.gz" \
+      --output /tmp/fd.tar.gz \
+    && printf '%s  %s\n' "${fd_sha256}" /tmp/fd.tar.gz \
+      | sha256sum --check --strict - \
+    && tar --extract --gzip --file /tmp/fd.tar.gz --directory /tmp \
+    && install -m 0755 "/tmp/${fd_archive}/fd" /usr/local/bin/fd \
+    && rm -rf /tmp/fd.tar.gz "/tmp/${fd_archive}"
 
 RUN case "${TARGETARCH}" in \
       amd64) gh_arch="amd64" ;; \

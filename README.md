@@ -440,6 +440,32 @@ covers additional search providers and subagent settings:
 [pi-web-access](https://github.com/nicobailon/pi-web-access) and
 [pi-subagents](https://github.com/nicobailon/pi-subagents).
 
+#### Compact tool output
+
+Install the compact renderer from a sandbox shell:
+
+```bash
+pi install npm:pi-tool-display@0.5.0 --no-approve
+mkdir -p "$HOME/.pi/agent/extensions/pi-tool-display"
+cat > "$HOME/.pi/agent/extensions/pi-tool-display/config.json" <<'JSON'
+{
+  "readOutputMode": "summary",
+  "searchOutputMode": "count",
+  "mcpOutputMode": "summary",
+  "bashOutputMode": "summary",
+  "enableNativeUserMessageBox": false
+}
+JSON
+```
+
+This configuration uses the balanced output modes and preserves the existing
+prompt style. It replaces any previous renderer configuration. In Pi, enter
+`/reload` to load the renderer. Press `Ctrl+O` to expand the full tool output.
+Enter `/tool-display` to inspect or adjust the output modes.
+
+The sandbox installs a pinned `fd` release with a verified checksum. Pi uses
+`fd` for file search. The older Debian package lacks an option that Pi requires.
+
 ### Check installed tools
 
 Check all installed tools:
