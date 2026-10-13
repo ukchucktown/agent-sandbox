@@ -416,8 +416,8 @@ Their packages and settings stay in the persistent `agent-home` volume.
 From a sandbox shell, install the selected versions:
 
 ```bash
-pi install npm:pi-web-access@0.35.0 --no-approve
-pi install npm:pi-subagents@0.75.0 --no-approve
+pi install npm:pi-web-access@0.40.0 --no-approve
+pi install npm:pi-subagents@0.78.0 --no-approve
 pi install /opt/agent-tools/node_modules/@earendil-works/pi-coding-agent/examples/extensions/plan-mode/index.ts --no-approve
 ```
 
@@ -572,6 +572,9 @@ Moshi also documents approval events when an agent requests approval. The
 extension does not add a permission policy or guarantee an approval prompt
 for every tool call. See [Moshi's hook documentation](https://getmoshi.app/docs/hooks)
 for the supported events and notification data.
+
+The image build skips Moshi's interactive setup and service installation.
+The container entrypoint starts the hook daemon.
 
 Diagnostics:
 
