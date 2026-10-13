@@ -117,7 +117,7 @@ test("provides the host-style listing and navigation shell baseline", () => {
   assert.match(dockerfile, /ZOXIDE_VERSION/);
   assert.match(zshrc, /source \/etc\/agent-shell\/aliases\.zsh/);
   assert.match(zshrc, /zoxide init zsh/);
-  assert.match(aliases, /alias ll='eza -lh --icons --git --no-user --no-time'/);
+  assert.match(aliases, /alias ll='eza -lh --git --no-user --no-time'/);
   assert.match(aliases, /alias tree=.*--level=3/);
   assert.match(aliases, /alias dtree=.*--level=3.* -D/);
   assert.doesNotMatch(

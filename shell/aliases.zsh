@@ -2,11 +2,11 @@
 
 # Better directory listings
 if command -v eza >/dev/null 2>&1; then
-  alias ls='eza --icons'
-  alias ll='eza -lh --icons --git --no-user --no-time'
-  alias la='eza -lah --icons --git --no-user --no-time'
-  alias tree="eza -a --tree --level=3 --ignore-glob='.git|.DS_Store' --icons=auto"
-  alias dtree="eza -a --tree --level=3 --ignore-glob='.git|.DS_Store' --icons=auto -D"
+  alias ls='eza'
+  alias ll='eza -lh --git --no-user --no-time'
+  alias la='eza -lah --git --no-user --no-time'
+  alias tree="eza -a --tree --level=3 --ignore-glob='.git|.DS_Store'"
+  alias dtree="eza -a --tree --level=3 --ignore-glob='.git|.DS_Store' -D"
   (( $+functions[compdef] )) && compdef eza=ls
 fi
 
