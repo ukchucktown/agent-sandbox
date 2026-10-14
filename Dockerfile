@@ -296,6 +296,8 @@ RUN curl --fail --silent --show-error --location \
       https://getmoshi.app/install.sh \
       --output /tmp/install-moshi-hook.sh \
     && MOSHI_HOOK_VERSION="${MOSHI_HOOK_VERSION}" \
+      MOSHI_HOOK_SKIP_FIRST_RUN=1 \
+      MOSHI_HOOK_SKIP_SERVICE=1 \
       INSTALL_DIR=/usr/local/bin \
       sh /tmp/install-moshi-hook.sh \
     && rm /tmp/install-moshi-hook.sh
